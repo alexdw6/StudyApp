@@ -1,4 +1,4 @@
-# study_app
+# StudyApp
 
 An application for sorting and practicing questions
 
