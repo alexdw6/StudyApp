@@ -12,14 +12,57 @@ class DatabaseManager {
       join(await getDatabasesPath(), _dbName),
       onCreate: (db, version) async {
         await db.execute('''
+          CREATE TABLE questions (
+              id SERIAL PRIMARY KEY,
+              question_text TEXT NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE choices (
+              id SERIAL PRIMARY KEY,
+              question_id INT REFERENCES questions(id) ON DELETE CASCADE,
+              choice_text TEXT NOT NULL
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE answers (
+              id SERIAL PRIMARY KEY,
+              question_id INT REFERENCES questions(id) ON DELETE CASCADE,
+              choice_id INT REFERENCES choices(id) ON DELETE CASCADE
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE groups (
+            id INTEGER PRIMARY KEY,
+            name TEXT
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE group_words (
+            group_id INTEGER,
+            question_id INTEGER,
+            PRIMARY KEY (group_id, question_id),
+            FOREIGN KEY (group_id) REFERENCES groups (id),
+            FOREIGN KEY (word_id) REFERENCES questions (id)
+          ) 
+        ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if(oldVersion < newVersion) {
+          await db.execute('''
             CREATE TABLE questions (
                 id SERIAL PRIMARY KEY,
                 question_text TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-            ''');
+          ''');
 
-        await db.execute('''
+          await db.execute('''
             CREATE TABLE choices (
                 id SERIAL PRIMARY KEY,
                 question_id INT REFERENCES questions(id) ON DELETE CASCADE,
@@ -27,39 +70,30 @@ class DatabaseManager {
             )
           ''');
 
-        await db.execute('''
-            CREATE TABLE correct_answers (
+          await db.execute('''
+            CREATE TABLE answers (
                 id SERIAL PRIMARY KEY,
                 question_id INT REFERENCES questions(id) ON DELETE CASCADE,
                 choice_id INT REFERENCES choices(id) ON DELETE CASCADE
             )
           ''');
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if(oldVersion < newVersion) {
-          await db.execute('''
-              CREATE TABLE questions (
-                  id SERIAL PRIMARY KEY,
-                  question_text TEXT NOT NULL,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-              )
-            ''');
 
           await db.execute('''
-              CREATE TABLE choices (
-                  id SERIAL PRIMARY KEY,
-                  question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-                  choice_text TEXT NOT NULL
-              )
-            ''');
+            CREATE TABLE groups (
+              id INTEGER PRIMARY KEY,
+              name TEXT
+            )
+          ''');
 
           await db.execute('''
-              CREATE TABLE correct_answers (
-                  id SERIAL PRIMARY KEY,
-                  question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-                  choice_id INT REFERENCES choices(id) ON DELETE CASCADE
-              )
-            ''');
+            CREATE TABLE group_words (
+              group_id INTEGER,
+              question_id INTEGER,
+              PRIMARY KEY (group_id, question_id),
+              FOREIGN KEY (group_id) REFERENCES groups (id),
+              FOREIGN KEY (word_id) REFERENCES questions (id)
+            ) 
+          ''');
         }
       },
       version: _version,

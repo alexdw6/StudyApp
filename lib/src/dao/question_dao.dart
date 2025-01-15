@@ -39,46 +39,54 @@ class QuestionDao {
     return Question.fromMap(await _database.query(tableName, where: "id: ?", whereArgs: [id]) as Map<String, dynamic>);
   }
 
-  // ADDS QUESTION WITH ANSWERS
-  Future<int> addQuestion({
-    required String questionText,
-    required List<String> choices,
-    required int correctChoiceIndex,
-  }) async {
-    return await _database.transaction<int>((txn) async {
-      final int questionId = await txn.insert('questions', {
-        'question_text': questionText,
-      });
-
-      int correctChoiceId = -1;
-
-      for (int i = 0; i < choices.length; i++) {
-        final int choiceId = await txn.insert('choices', {
-          'question_id': questionId,
-          'choice_text': choices[i],
-        });
-
-        if (i == correctChoiceIndex) {
-          correctChoiceId = choiceId;
-        }
-      }
-
-      if (correctChoiceId == -1) {
-        throw Exception("Invalid correctChoiceIndex: No choice was marked as correct.");
-      }
-
-      await txn.insert('correct_answers', {
-        'question_id': questionId,
-        'choice_id': correctChoiceId,
-      });
-
-      return questionId;
-    });
+  Future<int> createQuestion(Question question) async {
+    return await _database.insert(tableName, question.toMap());
   }
+
+  // ADDS QUESTION WITH ANSWERS
+  // Future<int> addQuestion({
+  //   required String questionText,
+  //   required List<String> choices,
+  //   required int correctChoiceIndex,
+  // }) async {
+  //   return await _database.transaction<int>((txn) async {
+  //     final int questionId = await txn.insert('questions', {
+  //       'question_text': questionText,
+  //     });
+  //
+  //     int correctChoiceId = -1;
+  //
+  //     for (int i = 0; i < choices.length; i++) {
+  //       final int choiceId = await txn.insert('choices', {
+  //         'question_id': questionId,
+  //         'choice_text': choices[i],
+  //       });
+  //
+  //       if (i == correctChoiceIndex) {
+  //         correctChoiceId = choiceId;
+  //       }
+  //     }
+  //
+  //     if (correctChoiceId == -1) {
+  //       throw Exception("Invalid correctChoiceIndex: No choice was marked as correct.");
+  //     }
+  //
+  //     await txn.insert('correct_answers', {
+  //       'question_id': questionId,
+  //       'choice_id': correctChoiceId,
+  //     });
+  //
+  //     return questionId;
+  //   });
+  // }
   
   // GET QUESTION WITH CHOICES AND ANSWER
   Future<QuestionData> getQuestionWithChoicesAndAnswer(int id) async {
     final List<Map<String, dynamic>> results = await _database.rawQuery(selectQuestionWithChoicesAndAnswer, [id]);
     return QuestionData.fromDatabaseResult(results);
+  }
+
+  Future<void> deleteQuestion(int id) async {
+    await _database.delete(tableName, where: 'id = ?', whereArgs: [id]);
   }
 }
