@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:study_app/src/dao/answer_dao.dart';
+import 'package:study_app/src/dao/choice_dao.dart';
+import 'package:study_app/src/dao/question_dao.dart';
+import 'package:study_app/src/managers/question_manager.dart';
 import 'package:study_app/src/services/database_manager.dart';
+
+import 'dao/group_dao.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,6 +16,11 @@ Future<void> main() async {
 
   // register singletons
   GetIt.I.registerSingleton<DatabaseManager>(databaseManager);
+  GetIt.I.registerSingleton<AnswerDao>(AnswerDao());
+  GetIt.I.registerSingleton<ChoiceDao>(ChoiceDao());
+  GetIt.I.registerSingleton<QuestionDao>(QuestionDao());
+  GetIt.I.registerSingleton<GroupDao>(GroupDao());
+  GetIt.I.registerSingleton<QuestionManager>(QuestionManager());
 
   runApp(const MyApp());
 }

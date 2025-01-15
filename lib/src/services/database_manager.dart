@@ -15,7 +15,8 @@ class DatabaseManager {
           CREATE TABLE questions (
               id SERIAL PRIMARY KEY,
               question_text TEXT NOT NULL,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              is_correct INTEGER NULL
           )
         ''');
 
@@ -43,7 +44,7 @@ class DatabaseManager {
         ''');
 
         await db.execute('''
-          CREATE TABLE group_words (
+          CREATE TABLE group_questions (
             group_id INTEGER,
             question_id INTEGER,
             PRIMARY KEY (group_id, question_id),
@@ -56,25 +57,26 @@ class DatabaseManager {
         if(oldVersion < newVersion) {
           await db.execute('''
             CREATE TABLE questions (
-                id SERIAL PRIMARY KEY,
-                question_text TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              id SERIAL PRIMARY KEY,
+              question_text TEXT NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              is_correct INTEGER NULL
             )
           ''');
 
           await db.execute('''
             CREATE TABLE choices (
-                id SERIAL PRIMARY KEY,
-                question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-                choice_text TEXT NOT NULL
+              id SERIAL PRIMARY KEY,
+              question_id INT REFERENCES questions(id) ON DELETE CASCADE,
+              choice_text TEXT NOT NULL
             )
           ''');
 
           await db.execute('''
             CREATE TABLE answers (
-                id SERIAL PRIMARY KEY,
-                question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-                choice_id INT REFERENCES choices(id) ON DELETE CASCADE
+              id SERIAL PRIMARY KEY,
+              question_id INT REFERENCES questions(id) ON DELETE CASCADE,
+              choice_id INT REFERENCES choices(id) ON DELETE CASCADE
             )
           ''');
 
@@ -86,7 +88,7 @@ class DatabaseManager {
           ''');
 
           await db.execute('''
-            CREATE TABLE group_words (
+            CREATE TABLE group_questions (
               group_id INTEGER,
               question_id INTEGER,
               PRIMARY KEY (group_id, question_id),

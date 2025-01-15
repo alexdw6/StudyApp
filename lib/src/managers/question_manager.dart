@@ -2,7 +2,11 @@ import 'package:get_it/get_it.dart';
 import 'package:study_app/src/dao/answer_dao.dart';
 import 'package:study_app/src/dao/choice_dao.dart';
 import 'package:study_app/src/dao/question_dao.dart';
+import 'package:study_app/src/models/answer.dart';
+import 'package:study_app/src/models/choice.dart';
 import 'package:study_app/src/models/question_data.dart';
+
+import '../models/question.dart';
 
 class QuestionManager {
   final QuestionDao _questionDao = GetIt.I<QuestionDao>();
@@ -28,5 +32,17 @@ class QuestionManager {
     await _answerDao.createAnswer(questionData.answer);
 
     return questionId;
+  }
+
+  Future<Question> getQuestion(int id) async {
+    return await _questionDao.getQuestion(id);
+  }
+
+  Future<QuestionData> getQuestionWithChoicesAndAnswer(int id) async {
+    Question question = await _questionDao.getQuestion(id);
+    List<Choice> choices = await _choiceDao.getAllChoicesWithQuestionId(id);
+    Answer answer = await _answerDao.getAnswerFromQuestionId(id);
+
+    return QuestionData(question: question, choices: choices, answer: answer);
   }
 }
