@@ -1,16 +1,13 @@
-import 'package:study_app/src/models/answer.dart';
 import 'package:study_app/src/models/choice.dart';
 import 'package:study_app/src/models/question.dart';
 
 class QuestionData {
   Question question;
   List<Choice> choices;
-  Answer answer;
 
   QuestionData({
     required this.question,
     required this.choices,
-    required this.answer,
   });
 
   factory QuestionData.fromDatabaseResult(List<Map<String, dynamic>> results) {
@@ -31,19 +28,13 @@ class QuestionData {
       'id': result['choice_id'],
       'questionId': result['question_id'],
       'choiceText': result['choice_text'],
+      'isCorrect' : result['is_correct'],
     })).toList();
 
-    // Extract the correct choice ID from the first result for the Answer
-    Answer answer = results.where((result) => result['answer_id'] != null).map((result) => Answer.fromMap({
-      'id': result['answer_id'],
-      'questionId': result['question_id'],
-      'choiceId': result['choice_id'],
-    })).first;
 
     return QuestionData(
       question: question,
       choices: choices,
-      answer: answer,
     );
   }
 }

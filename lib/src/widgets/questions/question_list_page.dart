@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:study_app/src/managers/question_manager.dart';
 
 import '../../dao/question_dao.dart';
 import '../../models/question.dart';
@@ -15,12 +16,13 @@ class QuestionListPage extends StatefulWidget {
 
 class _QuestionListPageState extends State<QuestionListPage> {
   final QuestionDao _questionDao = GetIt.I<QuestionDao>();
+  final QuestionManager _questionManager = GetIt.I<QuestionManager>();
 
   late List<Question> _questions;
   late List<Question> _filteredQuestions = _questions;
   bool _isRefreshing = false;
   bool _inSelectionMode = false;
-  SearchTerm _searchTerm = SearchTerm.WORD;
+  // SearchTerm _searchTerm = SearchTerm.WORD;
   String _query = "";
 
   List<bool> _selectedList = [];
@@ -32,7 +34,8 @@ class _QuestionListPageState extends State<QuestionListPage> {
   }
 
   Future<void> _refreshQuestionList() async {
-    await _questionDao.getQuestions().then((questions) {
+    await _questionManager.getQuestions().then((questions) {
+      debugPrint(questions.toString());
       setState(() {
         _questions = questions;
         _filteredQuestions = questions;
@@ -127,7 +130,7 @@ class _QuestionListPageState extends State<QuestionListPage> {
         child: Scaffold(
             appBar: AppBar(
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              title: Text('Dictionary'),
+              title: Text('questions'),
               actions: [
                 if (_inSelectionMode && _selectedList.any((element) => element))
                   IconButton(
@@ -219,7 +222,8 @@ class _QuestionListPageState extends State<QuestionListPage> {
                                         onPressed: () async {
                                           await _showAlertDialog(context, "Are you sure you want to delete this question?").then((value) async {
                                             if (value) {
-                                              await _questionDao.deleteQuestion(question.id!);
+                                              debugPrint(question.id.toString());
+                                              _questionManager.deleteQuestion(question.id!);
                                               _handleRefresh();
                                             }
                                           });
@@ -252,76 +256,76 @@ class _QuestionListPageState extends State<QuestionListPage> {
   }
 }
 
-enum SearchTerm {
-  WORD("question"),
-  MEANING("meaning");
-
-  const SearchTerm(this.value);
-  final String value;
-}
-
-class QuestionSearchBox extends StatefulWidget {
-  final void Function(SearchTerm selectedTerm) onTermSelected;
-  final void Function(String query) onSearch;
-
-  QuestionSearchBox({required this.onTermSelected, required this.onSearch});
-
-  @override
-  State<StatefulWidget> createState() => _QuestionSearchBoxState();
-
-}
-
-class _QuestionSearchBoxState extends State<QuestionSearchBox> {
-  SearchTerm selectedTerm = SearchTerm.WORD;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 50,
-      margin: EdgeInsets.all(16.0),
-      padding: EdgeInsets.symmetric(horizontal: 10.0),
-      decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(25.0)
-      ),
-      child: Row(
-        children: [
-          // Left side with DropdownButton
-          Expanded(
-            child: DropdownButton<SearchTerm>(
-              value: selectedTerm,
-              underline: Container(),
-              items: SearchTerm.values.map((SearchTerm searchTerm) {
-                return DropdownMenuItem<SearchTerm>(
-                  value: searchTerm,
-                  child: Text(searchTerm.value),
-                );
-              }).toList(),
-              onChanged: (SearchTerm? newValue) {
-                setState(() {
-                  selectedTerm = newValue!;
-                  widget.onTermSelected(selectedTerm);
-                });
-              },
-              hint: Text('Select an option'),
-            ),
-          ),
-          VerticalDivider(
-            color: Colors.grey,
-          ),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Enter text',
-                border: InputBorder.none,
-              ),
-              onChanged: (text) {
-                widget.onSearch(text);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// enum SearchTerm {
+//   WORD("question"),
+//   MEANING("meaning");
+//
+//   const SearchTerm(this.value);
+//   final String value;
+// }
+//
+// class QuestionSearchBox extends StatefulWidget {
+//   final void Function(SearchTerm selectedTerm) onTermSelected;
+//   final void Function(String query) onSearch;
+//
+//   QuestionSearchBox({required this.onTermSelected, required this.onSearch});
+//
+//   @override
+//   State<StatefulWidget> createState() => _QuestionSearchBoxState();
+//
+// }
+//
+// class _QuestionSearchBoxState extends State<QuestionSearchBox> {
+//   SearchTerm selectedTerm = SearchTerm.WORD;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       height: 50,
+//       margin: EdgeInsets.all(16.0),
+//       padding: EdgeInsets.symmetric(horizontal: 10.0),
+//       decoration: BoxDecoration(
+//           border: Border.all(color: Colors.grey),
+//           borderRadius: BorderRadius.circular(25.0)
+//       ),
+//       child: Row(
+//         children: [
+//           // Left side with DropdownButton
+//           Expanded(
+//             child: DropdownButton<SearchTerm>(
+//               value: selectedTerm,
+//               underline: Container(),
+//               items: SearchTerm.values.map((SearchTerm searchTerm) {
+//                 return DropdownMenuItem<SearchTerm>(
+//                   value: searchTerm,
+//                   child: Text(searchTerm.value),
+//                 );
+//               }).toList(),
+//               onChanged: (SearchTerm? newValue) {
+//                 setState(() {
+//                   selectedTerm = newValue!;
+//                   widget.onTermSelected(selectedTerm);
+//                 });
+//               },
+//               hint: Text('Select an option'),
+//             ),
+//           ),
+//           VerticalDivider(
+//             color: Colors.grey,
+//           ),
+//           Expanded(
+//             child: TextField(
+//               decoration: InputDecoration(
+//                 hintText: 'Enter text',
+//                 border: InputBorder.none,
+//               ),
+//               onChanged: (text) {
+//                 widget.onSearch(text);
+//               },
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

@@ -13,26 +13,19 @@ class DatabaseManager {
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE questions (
-              id SERIAL PRIMARY KEY,
+              id INTEGER PRIMARY KEY,
               question_text TEXT NOT NULL,
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              is_correct INTEGER NULL
+              got_correct INTEGER NULL
           )
         ''');
 
         await db.execute('''
           CREATE TABLE choices (
-              id SERIAL PRIMARY KEY,
+              id INTEGER PRIMARY KEY,
               question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-              choice_text TEXT NOT NULL
-          )
-        ''');
-
-        await db.execute('''
-          CREATE TABLE answers (
-              id SERIAL PRIMARY KEY,
-              question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-              choice_id INT REFERENCES choices(id) ON DELETE CASCADE
+              choice_text TEXT NOT NULL,
+              is_correct INTEGER DEFAULT 0
           )
         ''');
 
@@ -49,7 +42,7 @@ class DatabaseManager {
             question_id INTEGER,
             PRIMARY KEY (group_id, question_id),
             FOREIGN KEY (group_id) REFERENCES groups (id),
-            FOREIGN KEY (word_id) REFERENCES questions (id)
+            FOREIGN KEY (question_id) REFERENCES questions (id)
           ) 
         ''');
       },
@@ -57,26 +50,18 @@ class DatabaseManager {
         if(oldVersion < newVersion) {
           await db.execute('''
             CREATE TABLE questions (
-              id SERIAL PRIMARY KEY,
+              id INTEGER PRIMARY KEY,
               question_text TEXT NOT NULL,
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              is_correct INTEGER NULL
+              got_correct INTEGER NULL
             )
           ''');
 
           await db.execute('''
             CREATE TABLE choices (
-              id SERIAL PRIMARY KEY,
+              id INTEGER PRIMARY KEY,
               question_id INT REFERENCES questions(id) ON DELETE CASCADE,
               choice_text TEXT NOT NULL
-            )
-          ''');
-
-          await db.execute('''
-            CREATE TABLE answers (
-              id SERIAL PRIMARY KEY,
-              question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-              choice_id INT REFERENCES choices(id) ON DELETE CASCADE
             )
           ''');
 
@@ -93,7 +78,7 @@ class DatabaseManager {
               question_id INTEGER,
               PRIMARY KEY (group_id, question_id),
               FOREIGN KEY (group_id) REFERENCES groups (id),
-              FOREIGN KEY (word_id) REFERENCES questions (id)
+              FOREIGN KEY (question_id) REFERENCES questions (id)
             ) 
           ''');
         }

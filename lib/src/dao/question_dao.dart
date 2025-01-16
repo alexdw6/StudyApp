@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:study_app/src/models/question.dart';
@@ -10,15 +11,38 @@ class QuestionDao {
 
   QuestionDao();
 
+  static const String selectQuestionsFromGroup = '''
+    SELECT * FROM $tableName
+    LEFT JOIN group_questions ON words.id = group_questions.question_id
+    WHERE group_questions.group_id = ?;
+  ''';
+
   // GET ALL QUESTIONS WITHOUT CHOICES
   Future<List<Question>> getQuestions() async {
-    final List<Map<String, dynamic>> questionMaps = await _database.query(tableName);
-    return questionMaps.map((map) => Question.fromMap(map)).toList();
+    final List<Map<String, dynamic>> results = await _database.query(tableName);
+    return results.map((map) => Question.fromMap(map)).toList();
   }
 
   // GET QUESTION WITHOUT CHOICES
   Future<Question> getQuestion(int id) async {
-    return Question.fromMap(await _database.query(tableName, where: "id: ?", whereArgs: [id]) as Map<String, dynamic>);
+    List<Map<String, dynamic>> results = await _database.query(tableName, where: "id = ?", whereArgs: [id]);
+    return Question.fromMap(results.first);
+  }
+
+  Future<List<Question>> getQuestionsFromListOfIds(List<int> ids) async {
+    if (ids.isEmpty) {
+      return [];
+    }
+
+    final placeholders = List.filled(ids.length, '?').join(', ');
+
+    final List<Map<String, dynamic>> results = await _database.query(
+      tableName,
+      where: "id IN ($placeholders)",
+      whereArgs: ids,
+    );
+
+    return results.map((map) => Question.fromMap(map)).toList();
   }
 
   Future<int> createQuestion(Question question) async {
@@ -35,5 +59,10 @@ class QuestionDao {
 
   Future<void> updateQuestion(Question question) async {
     await _database.update(tableName, question.toMap(), where: 'id = ?', whereArgs: [question.id]);
+  }
+
+  Future<List<Question>> getQuestionsFromGroup(int groupId) async {
+    List<Map<String, dynamic>> wordMaps = await _database.rawQuery(selectQuestionsFromGroup, [groupId]);
+    return wordMaps.map((map) => Question.fromMap(map)).toList();
   }
 }

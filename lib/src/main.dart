@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:study_app/src/dao/answer_dao.dart';
 import 'package:study_app/src/dao/choice_dao.dart';
 import 'package:study_app/src/dao/question_dao.dart';
+import 'package:study_app/src/managers/choice_manager.dart';
 import 'package:study_app/src/managers/question_manager.dart';
 import 'package:study_app/src/services/database_manager.dart';
+import 'package:study_app/src/widgets/groups/group_list_page.dart';
+import 'package:study_app/src/widgets/questions/question_list_page.dart';
 
 import 'dao/group_dao.dart';
 
@@ -16,11 +18,12 @@ Future<void> main() async {
 
   // register singletons
   GetIt.I.registerSingleton<DatabaseManager>(databaseManager);
-  GetIt.I.registerSingleton<AnswerDao>(AnswerDao());
   GetIt.I.registerSingleton<ChoiceDao>(ChoiceDao());
   GetIt.I.registerSingleton<QuestionDao>(QuestionDao());
   GetIt.I.registerSingleton<GroupDao>(GroupDao());
+
   GetIt.I.registerSingleton<QuestionManager>(QuestionManager());
+  GetIt.I.registerSingleton<ChoiceManager>(ChoiceManager());
 
   runApp(const MyApp());
 }
@@ -50,65 +53,47 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  int _selectedIndex = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  final List<Widget> _widgetOptions = <Widget>[GroupListPage(), QuestionListPage()];
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return WillPopScope(
+        child: Scaffold(
+          body: _widgetOptions[_selectedIndex],
+          bottomNavigationBar: NavigationBar(
+            destinations: const <Widget>[
+              NavigationDestination(
+                  icon: Icon(Icons.book),
+                  label: 'Words'
+              ),
+              // NavigationDestination(
+              //     icon: Icon(Icons.border_color),
+              //     label: 'Exercise'
+              // ),
+              NavigationDestination(
+                  icon: Icon(Icons.class_),
+                  label: 'questions'
+              )
+            ],
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onWillPop: () async {
+          // if (_selectedIndex != 0) {
+          //   setState(() {
+          //     _selectedIndex = 0;
+          //   });
+          //   return false;
+          // }
+          return true;
+        }
     );
   }
 }

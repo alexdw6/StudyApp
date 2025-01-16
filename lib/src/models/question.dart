@@ -1,19 +1,19 @@
 class Question {
   int? id;
   String questionText;
-  bool? isCorrect;
+  bool? gotCorrect;
 
   Question({
     this.id,
     required this.questionText,
-    this.isCorrect,
+    this.gotCorrect,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'question_text': questionText,
-      'is_correct': isCorrect == null ? null : (isCorrect! ? 1 : 0),
+      'got_correct': gotCorrect == null ? null : (gotCorrect! ? 1 : 0),
     };
   }
 
@@ -21,7 +21,12 @@ class Question {
     return Question(
       id: map['id'],
       questionText: map['question_text'],
-      isCorrect: map['is_correct'] == null ? null : map['is_correct'] == 1,
+      gotCorrect: map['got_correct'] == null ? null : map['got_correct'] == 1,
     );
+  }
+
+  @override
+  String toString() {
+    return 'Question{id: $id, questionText: $questionText}';
   }
 }
