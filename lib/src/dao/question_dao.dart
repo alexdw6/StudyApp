@@ -17,6 +17,8 @@ class QuestionDao {
     WHERE group_questions.group_id = ?;
   ''';
 
+
+
   // GET ALL QUESTIONS WITHOUT CHOICES
   Future<List<Question>> getQuestions() async {
     final List<Map<String, dynamic>> results = await _database.query(tableName);
@@ -27,6 +29,11 @@ class QuestionDao {
   Future<Question> getQuestion(int id) async {
     List<Map<String, dynamic>> results = await _database.query(tableName, where: "id = ?", whereArgs: [id]);
     return Question.fromMap(results.first);
+  }
+
+  Future<List<Question>> getQuestionsFromGroup(int groupId) async {
+    List<Map<String, dynamic>> wordMaps = await _database.rawQuery(selectQuestionsFromGroup, [groupId]);
+    return wordMaps.map((map) => Question.fromMap(map)).toList();
   }
 
   Future<List<Question>> getQuestionsFromListOfIds(List<int> ids) async {
@@ -42,6 +49,11 @@ class QuestionDao {
       whereArgs: ids,
     );
 
+    return results.map((map) => Question.fromMap(map)).toList();
+  }
+
+  Future<List<Question>> getCorrectQuestion(bool isCorrect) async {
+    final List<Map<String, dynamic>> results = await _database.query(tableName, where: "got_correct = ?", whereArgs: [isCorrect ? 1 : 0]);
     return results.map((map) => Question.fromMap(map)).toList();
   }
 
@@ -61,8 +73,18 @@ class QuestionDao {
     await _database.update(tableName, question.toMap(), where: 'id = ?', whereArgs: [question.id]);
   }
 
-  Future<List<Question>> getQuestionsFromGroup(int groupId) async {
-    List<Map<String, dynamic>> wordMaps = await _database.rawQuery(selectQuestionsFromGroup, [groupId]);
-    return wordMaps.map((map) => Question.fromMap(map)).toList();
+  Future<void> updateGotCorrectInBatch(List<Question> questions) async {
+    Batch batch = _database.batch();
+
+    for (var question in questions) {
+      batch.update(
+        'questions',
+        {'got_correct': question.gotCorrect == null ? null : (question.gotCorrect! ? 1 : 0)},
+        where: 'id = ?',
+        whereArgs: [question.id],
+      );
+    }
+
+    await batch.commit(noResult: true); // `noResult: true` for faster execution if you don't need the results.
   }
 }

@@ -10,6 +10,8 @@ import 'add_group_page.dart';
 import 'edit_group_page.dart';
 
 class GroupListPage extends StatefulWidget {
+  const GroupListPage({super.key});
+
   @override
   State<StatefulWidget> createState() => _GroupListPageState();
 

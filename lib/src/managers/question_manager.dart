@@ -47,6 +47,10 @@ class QuestionManager {
     return questionData;
   }
 
+  Future<List<Question>> getCorrectQuestions(bool isCorrect) async {
+    return await _questionDao.getCorrectQuestion(isCorrect);
+  }
+
   void deleteQuestion(int id) async {
     await _choiceDao.deleteAllWithQuestionId(id);
     await _questionDao.deleteQuestion(id);
@@ -62,5 +66,9 @@ class QuestionManager {
     await _choiceDao.createChoises(questionData.choices);
 
     return questionId;
+  }
+
+  Future<void> updateGotCorrectInBatch(List<Question> questions) async {
+    await _questionDao.updateGotCorrectInBatch(questions);
   }
 }

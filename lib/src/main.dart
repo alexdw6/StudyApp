@@ -6,6 +6,8 @@ import 'package:study_app/src/managers/choice_manager.dart';
 import 'package:study_app/src/managers/question_manager.dart';
 import 'package:study_app/src/services/database_manager.dart';
 import 'package:study_app/src/widgets/groups/group_list_page.dart';
+import 'package:study_app/src/widgets/questions/correct_questions_page.dart';
+import 'package:study_app/src/widgets/questions/incorrect_questions_page.dart';
 import 'package:study_app/src/widgets/questions/question_list_page.dart';
 
 import 'dao/group_dao.dart';
@@ -35,7 +37,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Study app',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -55,7 +58,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _widgetOptions = <Widget>[GroupListPage(), QuestionListPage()];
+  final List<Widget> _widgetOptions = <Widget>[GroupListPage(), QuestionListPage(), CorrectQuestionsPage(), IncorrectQuestionsPage()];
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
           bottomNavigationBar: NavigationBar(
             destinations: const <Widget>[
               NavigationDestination(
-                  icon: Icon(Icons.book),
-                  label: 'Questions'
+                  icon: Icon(Icons.bookmarks),
+                  label: 'Groups'
               ),
               // NavigationDestination(
               //     icon: Icon(Icons.border_color),
@@ -74,7 +77,15 @@ class _MyHomePageState extends State<MyHomePage> {
               // ),
               NavigationDestination(
                   icon: Icon(Icons.class_),
-                  label: 'questions'
+                  label: 'Questions'
+              ),
+              NavigationDestination(
+                  icon: Icon(Icons.check), 
+                  label: 'Correct'
+              ),
+              NavigationDestination(
+                  icon: Icon(Icons.close),
+                  label: 'Incorrect'
               )
             ],
             selectedIndex: _selectedIndex,

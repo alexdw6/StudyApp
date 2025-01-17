@@ -12,8 +12,9 @@ import '../../models/question.dart';
 class QuestionExercisePage extends StatefulWidget {
   final int listSize;
   final int? groupId;
+  final bool? isCorrect;
 
-  QuestionExercisePage({required this.listSize, this.groupId});
+  QuestionExercisePage({required this.listSize, this.groupId, this.isCorrect});
 
   @override
   State<StatefulWidget> createState() => _QuestionExercisePageState();
@@ -22,7 +23,7 @@ class QuestionExercisePage extends StatefulWidget {
 class _QuestionExercisePageState extends State<QuestionExercisePage> {
   final QuestionDao _questionDao = GetIt.I<QuestionDao>();
   final QuestionManager _questionManager = GetIt.I<QuestionManager>();
-  List<QuestionData> _questions = [];
+  List<QuestionData> _questionData = [];
   int currentPageIndex = 0;
   List<int?> userAnswers = [];
   TextEditingController meaningController = TextEditingController();
@@ -37,17 +38,23 @@ class _QuestionExercisePageState extends State<QuestionExercisePage> {
   Future<void> _loadQuestions() async {
     int listSize = widget.listSize;
     int? groupId = widget.groupId;
+    bool? isCorrect = widget.isCorrect;
 
-    List<QuestionData> questions = [];
+    List<QuestionData> questionData = [];
 
     if (groupId != null) {
-      questions = await _questionManager.getQuestionDataFromGroup(groupId);
+      questionData = await _questionManager.getQuestionDataFromGroup(groupId);
+    } else if (isCorrect != null) {
+      List<Question> questions = await _questionManager.getCorrectQuestions(isCorrect);
+      for (var question in questions) {
+        questionData.add(await _questionManager.getQuestionWithChoicesAndAnswer(question.id!));
+      }
     } else {
-      questions = [];
+      questionData = [];
     }
 
     setState(() {
-      _questions = questions;
+      _questionData = questionData;
     });
   }
 
@@ -86,19 +93,27 @@ class _QuestionExercisePageState extends State<QuestionExercisePage> {
     if (selectedChoiceId != null) {
       userAnswers.add(selectedChoiceId);
 
-      if (currentPageIndex < _questions.length - 1) {
+      if (currentPageIndex < _questionData.length - 1) {
         setState(() {
           currentPageIndex++;
           selectedChoiceId = null; // Reset for next question
           meaningController.clear();
         });
       } else {
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SummaryPage(questions: _questions, userAnswers: userAnswers),
+            builder: (context) => SummaryPage(
+              questionData: _questionData,
+              userAnswers: userAnswers,
+            ),
           ),
-        );
+        ).then((value) {
+          if (value == true) {
+            // Perform any action after the user finishes the summary
+            Navigator.pop(context, value); // Navigate back to IncorrectQuestionsPage
+          }
+        });
       }
     } else {
       // Handle case where no choice is selected
@@ -117,23 +132,24 @@ class _QuestionExercisePageState extends State<QuestionExercisePage> {
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: _questions.isEmpty
+          child: _questionData.isEmpty
               ? Center(child: CircularProgressIndicator()) // Show loading or empty state
               : Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                _questions[currentPageIndex].question.questionText,
+                _questionData[currentPageIndex].question.questionText,
                 style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20.0),
               Expanded(
                 child: ListView.builder(
-                  itemCount: _questions[currentPageIndex].choices.length,
+                  itemCount: _questionData[currentPageIndex].choices.length,
                   itemBuilder: (context, index) {
-                    final choice = _questions[currentPageIndex].choices[index];
+                    final choice = _questionData[currentPageIndex].choices[index];
                     return CheckboxListTile(
                       title: Text(choice.choiceText),
+                      controlAffinity: ListTileControlAffinity.leading,
                       value: selectedChoiceId == choice.id,
                       onChanged: (value) {
                         setState(() {
@@ -157,18 +173,20 @@ class _QuestionExercisePageState extends State<QuestionExercisePage> {
       ),
       onWillPop: () async {
         String message = "Are you sure you want to quit the exercise?";
-        return await _showAlertDialog(context, message);
+        return await _showAlertDialog(context, message) ?? false;
       },
     );
   }
 }
 
 class SummaryPage extends StatelessWidget {
-  final List<QuestionData> questions;
+  final QuestionManager _questionManager = GetIt.I<QuestionManager>();
+
+  final List<QuestionData> questionData;
   final List<int?> userAnswers;
   String _score = "";
 
-  SummaryPage({super.key, required this.questions, required this.userAnswers});
+  SummaryPage({super.key, required this.questionData, required this.userAnswers});
 
   @override
   Widget build(BuildContext context) {
@@ -193,46 +211,38 @@ class SummaryPage extends StatelessWidget {
           ),
           Expanded(
               child: ListView.builder(
-                itemCount: questions.length,
+                itemCount: questionData.length,
                 itemBuilder:(context, index) {
                   return Card(
                     child: _checkAnswer(index),
                   );
                 },
               )
-          )
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: Text('Finish'),
+            ),
+          ),
         ],
       ),
     );
   }
 
   ListTile _checkAnswer(int index) {
-    // if (userAnswers[index] == questions[index].word) {
-    //   return ListTile(
-    //     title: Text(
-    //       "CORRECT: ${questions[index].meaning} is ${userAnswers[index]}",
-    //       style: const TextStyle(color: Colors.green),
-    //     ),
-    //   );
-    // } else {
-    //   return ListTile(
-    //     title: Text(
-    //       "WRONG: ${questions[index].meaning} is ${questions[index].word}",
-    //       style: const TextStyle(color: Colors.red),
-    //     ),
-    //     subtitle: Text("YOU WROTE: ${userAnswers[index]}"),
-    //   );
-    // }
-    QuestionData currentQuestion = questions[index];
-    Choice correctAnswer = questions[index].choices.where((choice) => choice.isCorrect == true).first;
+    QuestionData currentQuestion = questionData[index];
+    Choice correctAnswer = questionData[index].choices.where((choice) => choice.isCorrect == true).first;
     int correctAnswerIndex = currentQuestion.choices.indexWhere((c) => c.id == correctAnswer.id);
-    Choice userAnswer = questions[index].choices.where((choice) => choice.id == userAnswers[index]!).first;
-    int userAnswerIndex = currentQuestion.choices.indexWhere((c) => c.id == userAnswer.id);
+    Choice userAnswer = questionData[index].choices.where((choice) => choice.id == userAnswers[index]!).first;
 
     if (userAnswer.isCorrect){
       return ListTile(
           title: Text(
-            "Question ${index + 1}) ${questions[index].question.questionText}",
+            "Question ${index + 1}) ${questionData[index].question.questionText}",
             style: const TextStyle(color: Colors.green),
           ),
           subtitle: Text("Correct answer: ${correctAnswerIndex + 1}) ${correctAnswer.choiceText}"),
@@ -240,7 +250,7 @@ class SummaryPage extends StatelessWidget {
       } else {
         return ListTile(
           title: Text(
-            "Question ${index + 1}) ${questions[index].question.questionText}",
+            "Question ${index + 1}) ${questionData[index].question.questionText}",
             style: const TextStyle(color: Colors.red),
           ),
           subtitle: Text("Correct answer: ${correctAnswerIndex + 1}) ${correctAnswer.choiceText}"),
@@ -248,11 +258,11 @@ class SummaryPage extends StatelessWidget {
     }
   }
 
-  void _calculateResult() {
+  void _calculateResult() async {
     int result = 0;
-    for (int i = 0; i < questions.length;i++) {
+    for (int i = 0; i < questionData.length;i++) {
       int choiceIndex = userAnswers[i]!;
-      QuestionData currentQuestion = questions[i];
+      QuestionData currentQuestion = questionData[i];
       Choice currentChoice = currentQuestion.choices.where((choice) => choice.id == choiceIndex).first;
       if (currentChoice.isCorrect) {
         result++;
@@ -261,6 +271,9 @@ class SummaryPage extends StatelessWidget {
         currentQuestion.question.gotCorrect = false;
       }
     }
-    _score = "$result/${questions.length}";
+
+    _score = "$result/${questionData.length}";
+
+    await _questionManager.updateGotCorrectInBatch(questionData.map((questionData) => questionData.question).toList());
   }
 }

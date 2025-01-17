@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -8,7 +7,7 @@ import '../../models/question.dart';
 class EditQuestionPage extends StatefulWidget {
   final Question question;
 
-  EditQuestionPage({required this.question});
+  const EditQuestionPage({super.key, required this.question});
 
   @override
   State<StatefulWidget> createState() => _EditQuestionPageState();

@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:study_app/src/managers/question_manager.dart';
+import 'package:study_app/src/widgets/questions/question_details_page.dart';
 
 import '../../dao/question_dao.dart';
 import '../../models/question.dart';
@@ -9,6 +9,8 @@ import 'add_question_page.dart';
 import 'edit_question_page.dart';
 
 class QuestionListPage extends StatefulWidget {
+  const QuestionListPage({super.key});
+
   @override
   State<StatefulWidget> createState() => _QuestionListPageState();
 
@@ -130,7 +132,7 @@ class _QuestionListPageState extends State<QuestionListPage> {
         child: Scaffold(
             appBar: AppBar(
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              title: Text('questions'),
+              title: Text('Questions'),
               actions: [
                 if (_inSelectionMode && _selectedList.any((element) => element))
                   IconButton(
@@ -189,9 +191,15 @@ class _QuestionListPageState extends State<QuestionListPage> {
                                 onLongPress: () {
                                   toggleSelectionMode(true);
                                 },
-                                onTap: () {
+                                onTap: () async {
                                   if (_inSelectionMode) {
                                     toggleSelection(index);
+                                  } else {
+                                    await Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => QuestionDetailsPage(questionId: question.id!),
+                                    ));
+
+                                    _handleRefresh();
                                   }
                                 },
                                 leading: _inSelectionMode
