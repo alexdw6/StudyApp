@@ -42,7 +42,6 @@ class GroupDao {
         'name': groupData['group_name'],
       });
 
-      // Extract and add associated words
       group.questions = results
           .where((result) => result['question_id'] != null)
           .map((result) => Question.fromMap({

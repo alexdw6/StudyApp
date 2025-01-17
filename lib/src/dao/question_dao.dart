@@ -13,7 +13,7 @@ class QuestionDao {
 
   static const String selectQuestionsFromGroup = '''
     SELECT * FROM $tableName
-    LEFT JOIN group_questions ON words.id = group_questions.question_id
+    LEFT JOIN group_questions ON questions.id = group_questions.question_id
     WHERE group_questions.group_id = ?;
   ''';
 

@@ -66,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
             destinations: const <Widget>[
               NavigationDestination(
                   icon: Icon(Icons.book),
-                  label: 'Words'
+                  label: 'Questions'
               ),
               // NavigationDestination(
               //     icon: Icon(Icons.border_color),
