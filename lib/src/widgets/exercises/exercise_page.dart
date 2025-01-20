@@ -13,8 +13,9 @@ class QuestionExercisePage extends StatefulWidget {
   final int listSize;
   final int? groupId;
   final bool? isCorrect;
+  final bool? isRandomized;
 
-  QuestionExercisePage({required this.listSize, this.groupId, this.isCorrect});
+  QuestionExercisePage({required this.listSize, this.groupId, this.isCorrect, this.isRandomized});
 
   @override
   State<StatefulWidget> createState() => _QuestionExercisePageState();
@@ -51,6 +52,10 @@ class _QuestionExercisePageState extends State<QuestionExercisePage> {
       }
     } else {
       questionData = [];
+    }
+
+    if (widget.isRandomized != null && widget.isRandomized!) {
+      questionData.shuffle();
     }
 
     setState(() {

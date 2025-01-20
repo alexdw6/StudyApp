@@ -5,21 +5,23 @@ import 'package:study_app/src/dao/question_dao.dart';
 import 'package:study_app/src/models/question.dart';
 
 import '../../../dao/group_dao.dart';
+import '../../../dao/subject_dao.dart';
+import '../../../models/group.dart';
 
-class QuestionSelectPage extends StatefulWidget {
-  final int groupId;
+class GroupSelectPage extends StatefulWidget {
+  final int subjectId;
 
-  const QuestionSelectPage({required this.groupId});
+  const GroupSelectPage({required this.subjectId});
 
   @override
-  State<StatefulWidget> createState() => _questionselectPageState();
+  State<StatefulWidget> createState() => _GroupSelectPageState();
 }
 
-class _questionselectPageState extends State<QuestionSelectPage> {
-  final _questionDao = GetIt.I<QuestionDao>();
+class _GroupSelectPageState extends State<GroupSelectPage> {
+  final _subjectDao = GetIt.I<SubjectDao>();
   final _groupDao = GetIt.I<GroupDao>();
 
-  late List<Question> _questions;
+  late List<Group> _groups;
   List<bool> _selectedList = [];
   bool _isRefreshing = false;
 
@@ -30,10 +32,10 @@ class _questionselectPageState extends State<QuestionSelectPage> {
   }
 
   Future<void> _refreshWordList() async {
-    await _questionDao.getQuestions().then((questions) {
+    await _groupDao.getGroups().then((questions) {
       setState(() {
-        _questions = questions;
-        _selectedList = List.filled(_questions.length, false);
+        _groups = questions;
+        _selectedList = List.filled(_groups.length, false);
         _isRefreshing = false;
       });
     });
@@ -65,10 +67,10 @@ class _questionselectPageState extends State<QuestionSelectPage> {
                   List<int> ids = [];
                   for (var i = 0; i < _selectedList.length; i++) {
                     if (_selectedList[i]) {
-                      ids.add(_questions[i].id!);
+                      ids.add(_groups[i].id!);
                     }
                   }
-                  await _groupDao.addQuestionsToGroup(widget.groupId, ids);
+                  await _subjectDao.addGroupsToSubject(widget.subjectId, ids);
 
                   Navigator.pop(context, true);
                 },
@@ -77,20 +79,20 @@ class _questionselectPageState extends State<QuestionSelectPage> {
         ],
       ),
       body: ListView.builder(
-        itemCount: _questions.length,
+        itemCount: _groups.length,
         itemBuilder: (context, index) {
-          Question question = _questions[index];
+          Group group = _groups[index];
           return Card(
             elevation: 3,
             margin: EdgeInsets.all(8),
             child: ListTile(
-                onTap: () {
-                  toggleSelection(index);
-                },
-                leading: _selectedList[index]
-                    ? Icon(Icons.radio_button_checked, color: Colors.blue,)
-                    : Icon(Icons.radio_button_off, color: Colors.blue,),
-                title: Text(question.questionText, style: TextStyle(fontWeight: FontWeight.bold)),
+              onTap: () {
+                toggleSelection(index);
+              },
+              leading: _selectedList[index]
+                  ? Icon(Icons.radio_button_checked, color: Colors.blue,)
+                  : Icon(Icons.radio_button_off, color: Colors.blue,),
+              title: Text(group.name, style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           );
         },

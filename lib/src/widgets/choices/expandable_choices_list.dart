@@ -3,15 +3,16 @@ import 'package:study_app/src/models/choice.dart';
 
 class ExpandableChoicesList extends StatefulWidget {
   final Function(List<Choice>) onChoicesChanged;
+  final List<Choice>? initialChoices;
 
-  const ExpandableChoicesList({super.key, required this.onChoicesChanged});
+  const ExpandableChoicesList({ super.key, required this.onChoicesChanged, this.initialChoices });
 
   @override
   _ExpandableCardListState createState() => _ExpandableCardListState();
 }
 
 class _ExpandableCardListState extends State<ExpandableChoicesList> {
-  final List<Choice> _choices = [];
+  late List<Choice> _choices = [];
 
   // Creating controllers for each choice
   final List<TextEditingController> _controllers = [];
@@ -19,6 +20,8 @@ class _ExpandableCardListState extends State<ExpandableChoicesList> {
   @override
   void initState() {
     super.initState();
+    _choices = widget.initialChoices ?? [];
+
     // Initializing controllers
     for (var choice in _choices) {
       _controllers.add(TextEditingController(text: choice.choiceText));

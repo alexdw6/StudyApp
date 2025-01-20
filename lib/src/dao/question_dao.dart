@@ -17,8 +17,6 @@ class QuestionDao {
     WHERE group_questions.group_id = ?;
   ''';
 
-
-
   // GET ALL QUESTIONS WITHOUT CHOICES
   Future<List<Question>> getQuestions() async {
     final List<Map<String, dynamic>> results = await _database.query(tableName);

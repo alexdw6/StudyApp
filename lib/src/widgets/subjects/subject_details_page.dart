@@ -1,26 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:study_app/src/dao/group_dao.dart';
-import 'package:study_app/src/models/question.dart';
-import 'package:study_app/src/widgets/exercises/exercise_page.dart';
-import 'package:study_app/src/widgets/groups/questions/question_select_page.dart';
+import 'package:study_app/src/dao/subject_dao.dart';
+import 'package:study_app/src/models/group.dart';
+import 'package:study_app/src/models/subject.dart';
 
-import '../../models/group.dart';
-import 'edit_group_page.dart';
+import '../groups/group_details_page.dart';
+import 'edit_subject_page.dart';
+import 'groups/group_select_page.dart';
 
-class GroupDetailsPage extends StatefulWidget {
-  final int groupId;
+class SubjectDetailsPage extends StatefulWidget {
+  final int subjectId;
 
-  const GroupDetailsPage({required this.groupId});
+  const SubjectDetailsPage({required this.subjectId});
 
   @override
-  State<StatefulWidget> createState() => _GroupDetailsPageState();
+  State<StatefulWidget> createState() => _SubjectDetailsPageState();
 }
 
-class _GroupDetailsPageState extends State<GroupDetailsPage> {
-  final GroupDao _groupDao = GetIt.I<GroupDao>();
-  late Group _group;
+class _SubjectDetailsPageState extends State<SubjectDetailsPage> {
+  final SubjectDao _subjectDao = GetIt.I<SubjectDao>();
+  late Subject _subject;
 
   bool _isRefreshing = false;
 
@@ -32,10 +32,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   }
 
   Future<void> _refreshGroupList() async {
-    await _groupDao.getGroupWithQuestions(widget.groupId).then((group) {
+    await _subjectDao.getSubjectWithGroups(widget.subjectId).then((group) {
       setState(() {
-        _group = group;
-        _group.questions ??= [];
+        _subject = group;
+        _subject.groups ??= [];
         _isRefreshing = false;
       });
     });
@@ -74,25 +74,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Group details"),
+        title: Text("Subject details"),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
-              onPressed: () async {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => QuestionExercisePage(groupId: _group.id, listSize: 0,)));
-              },
-              icon: const Icon(Icons.menu_book)
-          ),
-          IconButton(
-              onPressed: () async {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => QuestionExercisePage(groupId: _group.id, isRandomized: true, listSize: 0,)));
-              },
-              icon: const Icon(Icons.shuffle)
-          ),
-          IconButton(
             onPressed: () async {
               bool result = await Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => EditGroupPage(group: _group),
+                builder: (context) => EditSubjectPage(subject: _subject),
               ));
 
               if (result) {
@@ -104,7 +92,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
           IconButton(
             onPressed: () async {
               bool result = await Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => QuestionSelectPage(groupId: widget.groupId,),
+                builder: (context) => GroupSelectPage(subjectId: widget.subjectId,),
               ));
 
               if (result) {
@@ -118,14 +106,14 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
         child: _isRefreshing
-          ? Center(child: CircularProgressIndicator())
-          : Column(
+            ? Center(child: CircularProgressIndicator())
+            : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: EdgeInsets.only(left: 30, top: 16),
               child: Text(
-                _group.name,
+                _subject.name,
                 style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -134,22 +122,30 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: _group.questions?.length,
+                itemCount: _subject.groups?.length,
                 itemBuilder: (BuildContext context, int index) {
-                  Question question = _group.questions![index];
+                  Group group = _subject.groups![index];
                   return Card(
                     elevation: 3,
                     margin: EdgeInsets.all(8),
                     child: ListTile(
-                      title: Text(question.questionText, style: TextStyle(fontWeight: FontWeight.bold)),
+                      onTap: () async {
+                        await Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => GroupDetailsPage(groupId: group.id!),
+                        ));
+
+                        _handleRefresh();
+                      },
+                      title: Text(group.name, style: TextStyle(fontWeight: FontWeight.bold)),
+
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           IconButton(
                             onPressed: () async {
-                              await _showAlertDialog(context, "Are you sure you want to delete this question from the group?").then((value) async {
+                              await _showAlertDialog(context, "Are you sure you want to delete this group from the subject?").then((value) async {
                                 if (value) {
-                                  await _groupDao.deleteQuestionFromGroup(widget.groupId, question.id!);
+                                  await _subjectDao.deleteGroupFromSubject(widget.subjectId, group.id!);
                                   _handleRefresh();
                                 }
                               });
@@ -168,5 +164,4 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       ),
     );
   }
-  
 }

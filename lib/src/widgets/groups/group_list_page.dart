@@ -139,5 +139,4 @@ class _GroupListPageState extends State<GroupListPage> {
       )
     );
   }
-
 }

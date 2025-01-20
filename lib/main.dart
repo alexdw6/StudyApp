@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:study_app/src/dao/choice_dao.dart';
+import 'package:study_app/src/dao/group_dao.dart';
 import 'package:study_app/src/dao/question_dao.dart';
+import 'package:study_app/src/dao/subject_dao.dart';
 import 'package:study_app/src/managers/choice_manager.dart';
 import 'package:study_app/src/managers/question_manager.dart';
 import 'package:study_app/src/services/database_manager.dart';
@@ -9,8 +11,7 @@ import 'package:study_app/src/widgets/groups/group_list_page.dart';
 import 'package:study_app/src/widgets/questions/correct_questions_page.dart';
 import 'package:study_app/src/widgets/questions/incorrect_questions_page.dart';
 import 'package:study_app/src/widgets/questions/question_list_page.dart';
-
-import 'dao/group_dao.dart';
+import 'package:study_app/src/widgets/subjects/subject_list_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,7 @@ Future<void> main() async {
   GetIt.I.registerSingleton<ChoiceDao>(ChoiceDao());
   GetIt.I.registerSingleton<QuestionDao>(QuestionDao());
   GetIt.I.registerSingleton<GroupDao>(GroupDao());
+  GetIt.I.registerSingleton<SubjectDao>(SubjectDao());
 
   GetIt.I.registerSingleton<QuestionManager>(QuestionManager());
   GetIt.I.registerSingleton<ChoiceManager>(ChoiceManager());
@@ -58,7 +60,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _widgetOptions = <Widget>[GroupListPage(), QuestionListPage(), CorrectQuestionsPage(), IncorrectQuestionsPage()];
+  final List<Widget> _widgetOptions = <Widget>[SubjectListPage(), GroupListPage(), QuestionListPage(), CorrectQuestionsPage(), IncorrectQuestionsPage(),];
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +71,12 @@ class _MyHomePageState extends State<MyHomePage> {
             destinations: const <Widget>[
               NavigationDestination(
                   icon: Icon(Icons.bookmarks),
+                  label: 'Subjects'
+              ),
+              NavigationDestination(
+                  icon: Icon(Icons.bookmarks),
                   label: 'Groups'
               ),
-              // NavigationDestination(
-              //     icon: Icon(Icons.border_color),
-              //     label: 'Exercise'
-              // ),
               NavigationDestination(
                   icon: Icon(Icons.class_),
                   label: 'Questions'
