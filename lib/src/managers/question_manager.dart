@@ -67,6 +67,11 @@ class QuestionManager {
 
     return questionId;
   }
+  
+  Future<void> updateQuestionAndChoices(QuestionData questionData) async {
+    await _questionDao.updateQuestion(questionData.question);
+    await _choiceDao.updateChoicesInBatch(questionData.choices);
+  }
 
   Future<void> updateGotCorrectInBatch(List<Question> questions) async {
     await _questionDao.updateGotCorrectInBatch(questions);

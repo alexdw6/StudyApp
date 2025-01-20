@@ -51,6 +51,21 @@ class ChoiceDao {
     await _database.update(tableName, choice.toMap(), where: 'id = ?', whereArgs: [choice.id]);
   }
 
+  Future<void> updateChoicesInBatch(List<Choice> choices) async {
+    Batch batch = _database.batch();
+
+    for (var choice in choices) {
+      batch.update(
+        'choices',
+        choice.toMap(),
+        where: 'id = ?',
+        whereArgs: [choice.id],
+      );
+    }
+
+    await batch.commit(noResult: true); // `noResult: true` for faster execution if you don't need the results.
+  }
+
   Future<void> deleteChoice(int id) async {
     await _database.delete(tableName, where: 'id = ?', whereArgs: [id]);
   }
