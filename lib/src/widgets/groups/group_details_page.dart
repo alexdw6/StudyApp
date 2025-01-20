@@ -84,6 +84,12 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
               icon: const Icon(Icons.menu_book)
           ),
           IconButton(
+              onPressed: () async {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => QuestionExercisePage(groupId: _group.id, isRandomized: true, listSize: 0,)));
+              },
+              icon: const Icon(Icons.shuffle)
+          ),
+          IconButton(
             onPressed: () async {
               bool result = await Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => EditGroupPage(group: _group),
