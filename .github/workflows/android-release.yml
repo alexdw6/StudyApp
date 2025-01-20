@@ -17,15 +17,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: release
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'latest' # Ensures the latest compatible versions are used
-      
+          flutter-version: '3.16.0'
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -41,10 +41,11 @@ jobs:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release-${{ github.event.inputs.release_version }}.apk
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-release-${{ github.event.inputs.release_version }}.apk
           tag_name: ${{ github.event.inputs.release_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
