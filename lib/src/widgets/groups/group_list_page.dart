@@ -7,7 +7,6 @@ import 'package:study_app/src/widgets/questions/question_list_page.dart';
 
 import '../../models/group.dart';
 import 'add_group_page.dart';
-import 'edit_group_page.dart';
 
 class GroupListPage extends StatefulWidget {
   const GroupListPage({super.key});

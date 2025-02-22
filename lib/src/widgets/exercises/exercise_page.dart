@@ -58,7 +58,7 @@ class _QuestionExercisePageState extends State<QuestionExercisePage> {
       questionData.shuffle();
     }
 
-    if (listSize != null && listSize != 0) {
+    if (listSize != null && listSize != 0 && questionData.length > listSize) {
       questionData.length = listSize;
     }
 
@@ -262,7 +262,19 @@ class SummaryPage extends StatelessWidget {
             "Question ${index + 1}) ${questionData[index].question.questionText}",
             style: const TextStyle(color: Colors.red),
           ),
-          subtitle: Text("Correct answer: ${correctAnswerIndex + 1}) ${correctAnswer.choiceText} | Your answer: ${userAnswer.choiceText}"),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Correct answer: ${correctAnswerIndex + 1}) ${correctAnswer.choiceText} | Your answer: ${userAnswer.choiceText}",
+              ),
+              const SizedBox(height: 4), // Optional spacing
+              Text(
+                "Explanation: ${correctAnswer.explanation}",
+                style: const TextStyle(fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
         );
     }
   }
