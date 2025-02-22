@@ -30,7 +30,7 @@ jobs:
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release --target=lib/src/main.dart
+        run: flutter build apk --release --target=lib/main.dart
 
       - name: Rename APK with release version
         run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/app-release-${{ github.event.inputs.release_version }}.apk
