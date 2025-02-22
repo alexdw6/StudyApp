@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:study_app/src/dao/group_dao.dart';
 import 'package:study_app/src/models/question.dart';
 import 'package:study_app/src/widgets/exercises/exercise_page.dart';
+import 'package:study_app/src/widgets/exercises/exercise_start_page.dart';
 import 'package:study_app/src/widgets/groups/questions/question_select_page.dart';
 
 import '../../models/group.dart';
@@ -79,13 +80,13 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
         actions: [
           IconButton(
               onPressed: () async {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => QuestionExercisePage(groupId: _group.id, listSize: 0,)));
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => ExerciseStartPage(groupId: _group.id, isRandomized: false,)));
               },
               icon: const Icon(Icons.menu_book)
           ),
           IconButton(
               onPressed: () async {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => QuestionExercisePage(groupId: _group.id, isRandomized: true, listSize: 0,)));
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => ExerciseStartPage(groupId:  _group.id, isRandomized: true,)));
               },
               icon: const Icon(Icons.shuffle)
           ),

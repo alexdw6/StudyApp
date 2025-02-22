@@ -5,33 +5,36 @@ class ExpandableChoicesList extends StatefulWidget {
   final Function(List<Choice>) onChoicesChanged;
   final List<Choice>? initialChoices;
 
-  const ExpandableChoicesList({ super.key, required this.onChoicesChanged, this.initialChoices });
+  const ExpandableChoicesList({super.key, required this.onChoicesChanged, this.initialChoices});
 
   @override
   _ExpandableCardListState createState() => _ExpandableCardListState();
 }
 
 class _ExpandableCardListState extends State<ExpandableChoicesList> {
-  late List<Choice> _choices = [];
-
-  // Creating controllers for each choice
-  final List<TextEditingController> _controllers = [];
+  late List<Choice> _choices;
+  final List<TextEditingController> _textControllers = [];
+  final List<TextEditingController> _explanationControllers = [];
 
   @override
   void initState() {
     super.initState();
     _choices = widget.initialChoices ?? [];
 
-    // Initializing controllers
+    // Initialize controllers
     for (var choice in _choices) {
-      _controllers.add(TextEditingController(text: choice.choiceText));
+      _textControllers.add(TextEditingController(text: choice.choiceText));
+      _explanationControllers.add(TextEditingController(text: choice.explanation ?? ""));
     }
   }
 
   @override
   void dispose() {
-    // Disposing controllers
-    for (var controller in _controllers) {
+    // Dispose all controllers
+    for (var controller in _textControllers) {
+      controller.dispose();
+    }
+    for (var controller in _explanationControllers) {
       controller.dispose();
     }
     super.dispose();
@@ -39,8 +42,18 @@ class _ExpandableCardListState extends State<ExpandableChoicesList> {
 
   void _addChoice() {
     setState(() {
-      _choices.add(Choice(choiceText: '', isCorrect: false));
-      _controllers.add(TextEditingController());
+      _choices.add(Choice(choiceText: '', isCorrect: false, explanation: ''));
+      _textControllers.add(TextEditingController());
+      _explanationControllers.add(TextEditingController());
+      _notifyParent();
+    });
+  }
+
+  void _removeChoice(int index) {
+    setState(() {
+      _choices.removeAt(index);
+      _textControllers.removeAt(index);
+      _explanationControllers.removeAt(index);
       _notifyParent();
     });
   }
@@ -49,66 +62,79 @@ class _ExpandableCardListState extends State<ExpandableChoicesList> {
     widget.onChoicesChanged(_choices);
   }
 
-  _removeChoice(int index) {
-    setState(() {
-      _choices.removeAt(index);
-      _controllers.removeAt(index);
-      _notifyParent();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<Choice> choiceList = List.from(_choices);
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
-            ..._choices.map((choice) {
-              int index = _choices.indexOf(choice);
+            ..._choices.asMap().entries.map((entry) {
+              int index = entry.key;
+              Choice choice = entry.value;
+
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: CheckboxListTile(
-                          value: choice.isCorrect,
-                          onChanged: (value) {
-                            setState(() {
-                              for (var c in _choices) {
-                                c.isCorrect = false; // Uncheck all other choices
-                              }
-                              choice.isCorrect = value!; // Check the selected choice
-                              _notifyParent();
-                            });
-                          },
-                          controlAffinity: ListTileControlAffinity.leading,
-                          title: TextField(
-                            controller: _controllers[index],
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CheckboxListTile(
+                              value: choice.isCorrect,
+                              onChanged: (value) {
+                                setState(() {
+                                  for (var c in _choices) {
+                                    c.isCorrect = false; // Uncheck all other choices
+                                  }
+                                  choice.isCorrect = value!;
+                                  _notifyParent();
+                                });
+                              },
+                              controlAffinity: ListTileControlAffinity.leading,
+                              title: TextField(
+                                controller: _textControllers[index],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _choices[index].choiceText = value;
+                                    _notifyParent();
+                                  });
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Edit Choice Text',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              _removeChoice(index);
+                            },
+                          ),
+                        ],
+                      ),
+                      if (choice.isCorrect) // Show explanation field only when checked
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: TextField(
+                            controller: _explanationControllers[index],
                             onChanged: (value) {
                               setState(() {
-                                _choices[index].choiceText = value;
+                                _choices[index].explanation = value;
                                 _notifyParent();
                               });
                             },
                             decoration: const InputDecoration(
-                              labelText: 'Edit Choice Text',
+                              labelText: 'Explanation (optional)',
                               border: OutlineInputBorder(),
                             ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          _removeChoice(index);
-                        },
-                      ),
                     ],
-                  )
+                  ),
                 ),
               );
             }).toList(),
