@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
             destinations: const <Widget>[
               NavigationDestination(
                   icon: Icon(Icons.bookmarks),
-                  label: 'Subjects'
+                  label: 'Subjects e'
               ),
               NavigationDestination(
                   icon: Icon(Icons.bookmarks),
